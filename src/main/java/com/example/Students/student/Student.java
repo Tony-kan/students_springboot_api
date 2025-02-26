@@ -10,7 +10,7 @@ import java.time.LocalDate;
 @Getter
 @Setter
 @ToString
-@AllArgsConstructor
+@AllArgsConstructor()
 @NoArgsConstructor
 public class Student {
     @Id
@@ -28,5 +28,13 @@ public class Student {
     private String email;
     private LocalDate dob;
     private  Integer age;
+
+    public Student(String name, String email, LocalDate dob, Integer age) {
+        this.name = name;
+        this.email = email;
+        this.dob = dob;
+        this.age = age;
+    }
+
 }
 
