@@ -1,10 +1,19 @@
 package com.example.Students.student.impl;
 
+import com.example.Students.Commons.ApiResponse;
 import com.example.Students.student.IStudentService;
 import com.example.Students.student.Student;
 import com.example.Students.student.IStudentRepository;
+import com.example.Students.student.hateoas.StudentModel;
+import com.example.Students.student.hateoas.StudentModelAssembler;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PagedResourcesAssembler;
+import org.springframework.hateoas.PagedModel;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -14,30 +23,43 @@ import java.util.Optional;
 
 @Slf4j
 @Service
-public class StudentServiceImpl {
+public class StudentServiceImpl implements IStudentService {
+
+    private final StudentModelAssembler studentModelAssembler;
 
     @Autowired
-    public StudentServiceImpl(IStudentRepository studentRepository) {
+    public StudentServiceImpl(IStudentRepository studentRepository, StudentModelAssembler studentModelAssembler) {
         this.studentRepository = studentRepository;
         log.info("StudentService created ......................");
+        this.studentModelAssembler = studentModelAssembler;
     }
 
     private final IStudentRepository studentRepository;
 
 
+    @Override
+    public ResponseEntity<PagedModel<?>> getAllStudents(int page,
+                                                        int size,
+                                                        PagedResourcesAssembler<Student> studentPagedResourcesAssembler) {
+        Page<Student> pagedStudents = studentRepository.findAll(
+                PageRequest.of(page,size, Sort.by("id").descending())
+        );
 
-    public List<Student> getStudentsService() {
-            return studentRepository.findAll();
+        if(pagedStudents.hasContent()) {
+            return ResponseEntity.ok(studentPagedResourcesAssembler.toModel(pagedStudents,studentModelAssembler));
+        }
+//        return studentRepository.findAll();
+        return ResponseEntity.ok(studentPagedResourcesAssembler.toEmptyModel(pagedStudents, StudentModel.class));
     }
 
-    public void registerNewStudent(Student student) {
+    public ResponseEntity<ApiResponse> registerNewStudent(Student student) {
         log.info("Registering new student ...... : ${student}");
         Optional<Student> studentOptional = studentRepository.findStudentByEmail(student.getEmail());
         if (studentOptional.isPresent()) {
             log.info("Student already registered ...... : ${student}");
             throw new IllegalStateException("Email already registered");
         }
-         studentRepository.save(student);
+     return    studentRepository.save(student);
     }
 
     public void deleteStudent(Long id) {
@@ -51,25 +73,11 @@ public class StudentServiceImpl {
 
     }
 
-@Transactional
+    @Transactional
     public void updateStudentDetails(Long studentId, String name, String email, LocalDate dob) {
 
-//        Optional<Student> student = studentRepository.findById(studentId);
-//
-//        if (!student.isPresent()) {
-//            log.info("Student with id : "+studentId+" not found");
-//            throw new IllegalStateException("Student with id : "+studentId+" not found");
-//        }
-    Student student = studentRepository.findById(studentId).orElseThrow(()->new IllegalStateException("Student with id : "+studentId+" not found"));
-
-    if(name!=null && !student.getName().equals(name)) {
-        student.setName(name);
     }
 
-    if(email!=null && !student.getEmail().equals(email)) {
-        student.setEmail(email);
-    }
-
-        studentRepository.save(student);
+    public ResponseEntity<ApiResponse> getUser(String studentId) {
     }
 }

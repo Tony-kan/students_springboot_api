@@ -1,12 +1,19 @@
 package com.example.Students.student;
 
+import com.example.Students.Commons.ApiResponse;
+import com.example.Students.student.hateoas.StudentModel;
 import com.example.Students.student.impl.StudentServiceImpl;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.web.PagedResourcesAssembler;
+import org.springframework.hateoas.PagedModel;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
 import java.util.List;
+
+import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 
 @RestController
 @RequestMapping(path="api/v1/students")
@@ -21,29 +28,36 @@ public class StudentController {
     }
 
     @GetMapping
-    public List<Student> getStudents() {
-     return studentService.getStudentsService();
+    public ResponseEntity<PagedModel<?>> getAllStudents( @RequestParam(value="page", defaultValue = "0") int page,
+                                                         @RequestParam(value="size", defaultValue = "20") int size,
+                                                        PagedResourcesAssembler<Student> pagedResourcesAssembler) {
+     return studentService.getAllStudents(page,size,pagedResourcesAssembler);
     }
 
-    @PostMapping
-    public void addNewStudent(@RequestBody Student student) {
-         studentService.registerNewStudent(student);
+    @GetMapping("/me/{studentId}")
+    public ResponseEntity<StudentModel> getStudentProfileDetails(@PathVariable String studentId) {
+        return studentService.getStudentProfile(studentId);
+    }
+
+    @PostMapping(consumes = APPLICATION_JSON_VALUE,produces = APPLICATION_JSON_VALUE)
+    public ResponseEntity<ApiResponse> addNewStudent(@RequestBody Student student) {
+         return studentService.registerNewStudent(student);
     }
 
 
     @PutMapping(path="{studentId}")
-    public void updateStudent(
+    public ResponseEntity<ApiResponse> updateStudent(
             @PathVariable("studentId") Long studentId,
             @RequestParam(required = false)  String name,
             @RequestParam(required = false) String email,
             @RequestParam(required = false) LocalDate dob) {
 
-        studentService.updateStudentDetails(studentId,name,email,dob);
+       return studentService.updateStudentDetails(studentId,name,email,dob);
     }
 
 
     @DeleteMapping(path="{studentId}")
-    public void deleteStudent(@PathVariable("studentId") Long id) {
-       studentService.deleteStudent(id);
+    public ResponseEntity<ApiResponse> deleteStudent(@PathVariable("studentId") Long id) {
+      return studentService.deleteStudent(id);
     }
 }

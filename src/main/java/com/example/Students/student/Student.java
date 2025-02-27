@@ -32,8 +32,8 @@ public class Student extends BaseEntity {
 //    )
 
 
-    @Column(name = "name",nullable = false,length = 90)
-     String name;
+    @Column(name = "full_name",nullable = false,length = 90)
+     String fullName;
 
     @Column(name = "email",nullable = false,length = 90)
      String email;
@@ -41,8 +41,8 @@ public class Student extends BaseEntity {
     @Column(name = "dob",nullable = false,length = 90)
     LocalDate dob;
 
-    @Column(name = "age",nullable = false,length = 90)
-    Integer age;
+    @Column(name = "gender",nullable = false,length = 90)
+    String gender;
 
 //    public Student(String name, String email, LocalDate dob, Integer age) {
 //        this.name = name;
