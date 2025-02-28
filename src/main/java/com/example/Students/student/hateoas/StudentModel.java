@@ -4,6 +4,7 @@ import lombok.*;
 import lombok.experimental.FieldDefaults;
 import org.springframework.hateoas.RepresentationModel;
 
+import java.time.LocalDate;
 import java.util.UUID;
 
 @AllArgsConstructor
@@ -17,4 +18,6 @@ public class StudentModel extends RepresentationModel<StudentModel> {
     String fullName;
     String email;
     String gender;
+    String phoneNumber;
+    LocalDate dob;
 }

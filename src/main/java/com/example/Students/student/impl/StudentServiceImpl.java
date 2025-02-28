@@ -1,9 +1,12 @@
 package com.example.Students.student.impl;
 
 import com.example.Students.Commons.ApiResponse;
+import com.example.Students.StudentsApplication;
 import com.example.Students.student.IStudentService;
 import com.example.Students.student.Student;
 import com.example.Students.student.IStudentRepository;
+import com.example.Students.student.StudentController;
+import com.example.Students.student.dto.CreateStudentRequest;
 import com.example.Students.student.hateoas.StudentModel;
 import com.example.Students.student.hateoas.StudentModelAssembler;
 import lombok.extern.slf4j.Slf4j;
@@ -20,6 +23,10 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
+
+import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
+import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 
 @Slf4j
 @Service
@@ -52,17 +59,50 @@ public class StudentServiceImpl implements IStudentService {
         return ResponseEntity.ok(studentPagedResourcesAssembler.toEmptyModel(pagedStudents, StudentModel.class));
     }
 
-    public ResponseEntity<ApiResponse> registerNewStudent(Student student) {
+    @Override
+    public ResponseEntity<StudentModel> getStudentProfile(UUID studentId) {
+
+//        return ResponseEntity.ok(
+//                StudentModelAssembler.toModel(
+//                        studentRepository.findStudentByUUID(studentId).orElseThrow(()-> new IllegalStateException("Student with id : {studentId} not found"))
+//                ).add(linkTo(methodOn(StudentController.class)
+//                        .getAllStudents(0,20,null))
+//                        .withRel("Students")
+//                )
+//        );
+        return null;
+    }
+
+    @Override
+    public ResponseEntity<StudentModel> getStudentById(UUID studentId) {
+        return null;
+    }
+
+    @Override
+    public ResponseEntity<ApiResponse> registerNewStudent(CreateStudentRequest createStudentRequest) {
         log.info("Registering new student ...... : ${student}");
-        Optional<Student> studentOptional = studentRepository.findStudentByEmail(student.getEmail());
+        Optional<Student> studentOptional = studentRepository.findStudentByEmail(createStudentRequest.getEmail());
         if (studentOptional.isPresent()) {
             log.info("Student already registered ...... : ${student}");
             throw new IllegalStateException("Email already registered");
         }
-     return    studentRepository.save(student);
+//     return   studentRepository.save(student);
+        studentRepository.save(
+                Student.builder()
+                        .fullName(createStudentRequest.getFullName())
+                        .email(createStudentRequest.getEmail())
+                        .dob(createStudentRequest.getDob())
+                        .gender(createStudentRequest.getGender())
+                        .phoneNumber(createStudentRequest.getPhoneNumber())
+                .build());
+
+        return ResponseEntity.ok(
+                ApiResponse.builder().success(true).message("Student Saved").build()
+        );
     }
 
-    public void deleteStudent(Long id) {
+    @Override
+    public ResponseEntity<ApiResponse> deleteStudent(Long id) {
         log.info("Deleting student with id...... : ${id}");
 
         boolean exists = studentRepository.existsById(id);
@@ -71,13 +111,51 @@ public class StudentServiceImpl implements IStudentService {
         }
         studentRepository.deleteById(id);
 
+        return ResponseEntity.ok(
+                ApiResponse.builder()
+                        .success(true)
+                        .message("Student Deleted")
+                        .build());
+
     }
 
+    @Override
     @Transactional
-    public void updateStudentDetails(Long studentId, String name, String email, LocalDate dob) {
+    public ResponseEntity<ApiResponse> updateStudentDetails(UUID studentId,
+                                                            String fullName,
+                                                            String email,
+                                                            LocalDate dob,
+                                                            String gender) {
 
+        Student student = studentRepository.findStudentByUUID(studentId).orElseThrow(()-> new IllegalStateException("Student with id : {studentId} not found"));
+
+
+       if(fullName != null && !fullName.trim().isEmpty()) {
+           Student.builder().fullName(fullName).build();
+       }
+       if(email != null && !email.trim().isEmpty()) {
+           Student.builder().email(email).build();
+       }
+
+       if(dob != null) {
+           Student.builder().dob(dob).build();
+       }
+
+       if(gender != null && !gender.trim().isEmpty()) {
+           Student.builder().gender(gender).build();
+       }
+
+        return ResponseEntity.ok(ApiResponse.builder().success(true).message("Student Updated").build());
     }
 
-    public ResponseEntity<ApiResponse> getUser(String studentId) {
-    }
+//    @Override
+//    public ResponseEntity<StudentsApplication> getStudentById(String studentId) {
+//        if(studentRepository.findStudentByUUID(UUID.fromString(studentId)).isEmpty()) {
+//            throw new IllegalStateException("Student with id : "+studentId+" not found");
+//
+//        }
+//
+//        return ResponseEntity.ok(
+//                );
+//    }
 }

@@ -8,13 +8,15 @@ import org.springframework.stereotype.Component;
 @Component
 public class StudentModelAssembler implements RepresentationModelAssembler<Student, StudentModel> {
     @Override
-    public StudentModel toModel(Student studentEntity) {
+    public  StudentModel toModel(Student studentEntity) {
         return StudentModel
                 .builder()
                 .studentId(studentEntity.getId())
                 .fullName(studentEntity.getFullName())
                 .email(studentEntity.getEmail())
                 .gender(studentEntity.getGender())
+                .phoneNumber(studentEntity.getPhoneNumber())
+                .dob(studentEntity.getDob())
                 .build();
     }
 

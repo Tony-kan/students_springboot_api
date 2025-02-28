@@ -38,6 +38,9 @@ public class Student extends BaseEntity {
     @Column(name = "email",nullable = false,length = 90)
      String email;
 
+    @Column(name = "phone_number",nullable = false,length = 90)
+    String phoneNumber;
+
     @Column(name = "dob",nullable = false,length = 90)
     LocalDate dob;
 
